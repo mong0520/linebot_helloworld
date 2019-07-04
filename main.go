@@ -1,29 +1,41 @@
 package main
 
 import (
-	"github.com/mong0520/linebot-ptt-beauty/models"
+	"fmt"
 	"log"
+	"net/http"
 	"os"
-	"http"
+	"strings"
+
+	"github.com/joho/godotenv"
+	"github.com/line/line-bot-sdk-go/linebot"
 )
 
+var SSLCertPath = "/path/to/ssl"
+var SSLPrivateKeyPath = "/path/to/key"
+var bot *linebot.Client
+
 func main() {
-	var err error
-	meta = m
-	secret := os.Getenv("ChannelSecret")
-	token := os.Getenv("ChannelAccessToken")
+	// load env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Panic(err)
+	}
+	secret := os.Getenv("LINE_SECRET")
+	token := os.Getenv("LINE_TOKEN")
+	port := os.Getenv("PORT")
+	runMode := os.Getenv("RUN_MODE")
+
+	// init linebot
 	bot, err = linebot.New(secret, token)
 	if err != nil {
 		log.Println(err)
 	}
-	//log.Println("Bot:", bot, " err:", err)
+
+	// init web hook
 	http.HandleFunc("/callback", callbackHandler)
-	port := os.Getenv("PORT")
-	//port := "8080"
 	addr := fmt.Sprintf(":%s", port)
-	runMode := os.Getenv("RUNMODE")
-	log.Printf("Run Mode = %s\n", runMode)
-	if strings.ToLower(runMode) == ModeHttps {
+	if strings.ToLower(runMode) == "https" {
 		log.Printf("Secure listen on %s with \n", addr)
 		err := http.ListenAndServeTLS(addr, SSLCertPath, SSLPrivateKeyPath, nil)
 		if err != nil {
@@ -38,7 +50,6 @@ func main() {
 	}
 }
 
-
 func callbackHandler(w http.ResponseWriter, r *http.Request) {
 	events, err := bot.ParseRequest(r)
 
@@ -52,22 +63,26 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, event := range events {
+		// Handle message event
 		if event.Type == linebot.EventTypeMessage {
-			log.Printf("Receieve Event Type = %s from User [%s](%s), or Room [%s] or Group [%s]\n",
-				event.Type, userDisplayName, event.Source.UserID, event.Source.RoomID, event.Source.GroupID)
+			log.Printf("Receieve Event Type = %s from User [%s], or Room [%s] or Group [%s]\n",
+				event.Type, event.Source.UserID, event.Source.RoomID, event.Source.GroupID)
 
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
 				log.Println("Text = ", message.Text)
-				// textHander(event, message.Text)			
+				replyTextMessage(event, "I got a text message from "+event.Source.UserID)
 			}
 		} else if event.Type == linebot.EventTypePostback {
 			log.Println("got a postback event")
-			log.Println(event.Postback.Data)
-			// postbackHandler(event)
-
 		} else {
 			log.Printf("got a %s event\n", event.Type)
 		}
+	}
+}
+
+func replyTextMessage(event *linebot.Event, text string) {
+	if _, err := bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(text)).Do(); err != nil {
+		log.Println(err)
 	}
 }

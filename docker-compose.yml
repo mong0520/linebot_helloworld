@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  linebot_helloworld:
+    image: linebot_helloworld
+    build: .
+    ports:
+      - 2000:2000
