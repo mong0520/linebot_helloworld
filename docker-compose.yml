@@ -1,7 +1,16 @@
 version: '3'
 
 services:
-  linebot_helloworld:
+  ngrok:
+    image: gtriggiano/ngrok-tunnel
+    hostname: ngrok
+    environment:
+      - TARGET_HOST=linebot
+      - TARGET_PORT=2000
+    depends_on:
+      - linebot
+
+  linebot:
     image: linebot_helloworld
     build: .
     ports:

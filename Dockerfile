@@ -8,9 +8,10 @@ RUN go build
 RUN go install -v ./...
 
 #final stage
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 RUN apt-get update
-RUN apt-get install -y curl
+#necessary package to make ngrok work
+RUN apt-get install -y ca-certificates
 COPY --from=builder /go/bin/linebot_helloworld /app
 COPY --from=builder /go/src/app/.env /.env
 ENTRYPOINT /app

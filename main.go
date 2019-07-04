@@ -71,7 +71,7 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
 				log.Println("Text = ", message.Text)
-				replyTextMessage(event, "I got a text message from "+event.Source.UserID)
+				replyTextMessage(event, "I got a text message: ["+message.Text+"] from User ID: "+event.Source.UserID)
 			}
 		} else if event.Type == linebot.EventTypePostback {
 			log.Println("got a postback event")

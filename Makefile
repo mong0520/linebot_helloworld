@@ -2,7 +2,7 @@ build:
 	@docker-compose build
 
 up:
-	@docker-compose up -d
+	@docker-compose up
 
 down:
 	@docker-compose down
@@ -10,8 +10,5 @@ down:
 restart:
 	@docker-compose restart
 
-tunnel:
-	@ngrok http 2000
-
-debug_%:
-	@docker exec -it $* /bin/bash
+# tunnel:
+# 	@ngrok http 2000
